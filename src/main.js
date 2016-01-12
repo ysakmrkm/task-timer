@@ -1,5 +1,6 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
+var $ = require('jquery');
 
 var data = [
   {key: 0, author: "Pete Hunt", text: "This is one comment"},
