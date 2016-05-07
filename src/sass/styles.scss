@@ -1,0 +1,97 @@
+.toolbar {
+	-webkit-app-region: drag;
+	-webkit-user-select: none;
+	padding: 0 68px;
+}
+
+.toolbar-button {
+	position: absolute;
+	top: 5px;
+	left: 8px;
+	width: 52px;
+	height: 12px;
+}
+
+.toolbar-button-item {
+	position: absolute;
+	top: 0;
+	width: 12px;
+	height: 12px;
+	border-radius: 100%;
+	border: 0;
+}
+
+.toolbar-button-item::before ,
+.toolbar-button-item::after {
+	display: none;
+	content: '';
+}
+
+.toolbar-button:hover .toolbar-button-item::before ,
+.toolbar-button:hover .toolbar-button-item::after {
+	display: block;
+}
+
+.toolbar-button-item:focus {
+	outline: 0;
+}
+
+.close {
+	left: 0;
+	background-color: rgb(255,97,88);
+	box-shadow: 0 0 1px 1px rgb(224, 70, 64) inset;
+}
+
+.close::before ,
+.close::after {
+	position: absolute;
+	top: 2px;
+	left: 5px;
+	width: 2px;
+	height: 8px;
+	background: #000;
+}
+
+.close::before {
+	transform: rotate(45deg);
+}
+.close::after {
+	transform: rotate(135deg);
+}
+
+.minimize {
+	left: 20px;
+	background-color: rgb(255,189,46);
+	box-shadow: 0 0 1px 1px rgb(224, 160, 24) inset;
+}
+
+.minimize::after {
+	position: absolute;
+	top: 5px;
+	left: 2px;
+	width: 8px;
+	height: 2px;
+	background: #000;
+}
+
+.fullscreen {
+	left: 40px;
+	background-color: rgb(42,204,66);
+	box-shadow: 0 0 1px 1px rgb(18,172,40) inset;
+}
+
+.fullscreen::before {
+	position: absolute;
+	left: 3px;
+	bottom: 3px;
+	border-right: 4px solid transparent;
+	border-bottom: 4px solid #000;
+}
+
+.fullscreen::after {
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	border-right: 4px solid #000;
+	border-bottom: 4px solid transparent;
+}
