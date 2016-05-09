@@ -57,6 +57,169 @@
 	var React = __webpack_require__(2);
 	var ReactDOM = __webpack_require__(159);
 
+	var tasks = [];
+	var strage = localStorage;
+
+	var Header = React.createClass({
+	  displayName: 'Header',
+
+	  render: function render() {
+	    return React.createElement(
+	      'header',
+	      { className: 'toolbar toolbar-header' },
+	      React.createElement(
+	        'div',
+	        { className: 'toolbar-button' },
+	        React.createElement('button', { type: 'button', className: 'toolbar-button-item close', id: 'close' }),
+	        React.createElement('button', { type: 'button', className: 'toolbar-button-item minimize', id: 'minimize' }),
+	        React.createElement('button', { type: 'button', className: 'toolbar-button-item fullscreen', id: 'fullscreen' })
+	      ),
+	      React.createElement(
+	        'h1',
+	        { className: 'title' },
+	        'Task Timer'
+	      )
+	    );
+	  }
+	});
+
+	var Task = React.createClass({
+	  displayName: 'Task',
+
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { className: 'list-group-item' },
+	      React.createElement(
+	        'div',
+	        { className: 'media-body' },
+	        React.createElement(
+	          'strong',
+	          null,
+	          this.props.children
+	        )
+	      )
+	    );
+	  }
+	});
+
+	var TaskList = React.createClass({
+	  displayName: 'TaskList',
+
+	  render: function render() {
+	    tasks = this.props.tasks !== null ? this.props.tasks : tasks;
+	    if (tasks.length !== 0) {
+	      var taskNodes = this.props.tasks.map(function (task) {
+	        return React.createElement(
+	          Task,
+	          null,
+	          task.name
+	        );
+	      });
+	    } else {
+	      var taskNodes = function taskNodes() {
+	        return React.createElement(Task, null);
+	      };
+	    }
+	    return React.createElement(
+	      'div',
+	      { className: 'window-content' },
+	      React.createElement(
+	        'div',
+	        { className: 'list-group' },
+	        taskNodes
+	      )
+	    );
+	  }
+	});
+
+	var AddTaskBox = React.createClass({
+	  displayName: 'AddTaskBox',
+
+	  hundleSubmit: function hundleSubmit(e) {
+	    e.preventDefault();
+	    var task = ReactDOM.findDOMNode(this.refs.name).value.trim();
+	    if (task !== '') {
+	      tasks.push({ name: task });
+	      this.props.onTaskSubmit({ name: task });
+	    }
+
+	    if (strage.getItem('tasks') !== null) {
+	      var storedTasks = strage.getItem('tasks');
+	    } else {
+	      var storedTasks = strage;
+	    }
+
+	    strage.setItem('tasks', JSON.stringify(tasks));
+
+	    ReactDOM.findDOMNode(this.refs.name).value = '';
+	  },
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { className: 'add-task sidebar' },
+	      React.createElement(
+	        'form',
+	        { className: 'add-task-form', onSubmit: this.hundleSubmit },
+	        React.createElement(
+	          'div',
+	          { className: 'form-group' },
+	          React.createElement('input', { className: 'form-control', type: 'text', placeholder: 'Task name', ref: 'name' })
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'form-actions' },
+	          React.createElement(
+	            'button',
+	            { className: 'btn btn-form btn-primary pull-right' },
+	            'Add'
+	          )
+	        )
+	      )
+	    );
+	  }
+	});
+
+	var Footer = React.createClass({
+	  displayName: 'Footer',
+
+	  render: function render() {
+	    return React.createElement(
+	      'footer',
+	      { className: 'toolbar toolbar-footer' },
+	      React.createElement('div', { className: 'toolbar-actions' })
+	    );
+	  }
+	});
+
+	var AppBox = React.createClass({
+	  displayName: 'AppBox',
+
+	  getInitialState: function getInitialState() {
+	    return { tasks: JSON.parse(strage.getItem('tasks')) };
+	  },
+	  componentDidMount: function componentDidMount() {
+	    this.props = { tasks: JSON.parse(strage.getItem('tasks')) };
+	    this.setState({ tasks: this.state.tasks });
+	  },
+	  hundleTaskSubmit: function hundleTaskSubmit(task) {
+	    tasks = this.state.tasks !== null ? this.state.tasks : tasks;
+	    this.setState({ tasks: tasks });
+	  },
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { className: 'window' },
+	      React.createElement(Header, null),
+	      React.createElement(TaskList, { tasks: this.state.tasks }),
+	      React.createElement(AddTaskBox, { onTaskSubmit: this.hundleTaskSubmit }),
+	      React.createElement(Footer, null)
+	    );
+	  }
+	});
+
+	ReactDOM.render(React.createElement(AppBox, { tasks: tasks }), document.getElementById('app-box'));
+
 /***/ },
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
