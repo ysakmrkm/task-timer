@@ -106,3 +106,45 @@
 	padding: 10px;
 	border-top: 1px solid #ddd;
 }
+
+.task-item {
+	&-inner {
+		display: table;
+		width: 100%;
+	}
+
+	&-contents {
+		display: table-cell;
+		vertical-align: middle;
+	}
+
+	&-name {
+		width: 40%;
+		font-size: 1.6rem;
+	}
+
+	&-timer {
+		width: 30%;
+		text-align: center;
+		font-size: 2.4rem;
+	}
+
+	&-buttons {
+		width: 30%;
+		text-align: right;
+
+		.icon {
+			font-size: 1.3rem;
+			margin-left: 20px;
+			cursor: pointer;
+
+			&:hover {
+				opacity: .5;
+			}
+
+			&-play {
+				font-size: 2rem;
+			}
+		}
+	}
+}

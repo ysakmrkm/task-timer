@@ -83,20 +83,71 @@
 	  }
 	});
 
-	var Task = React.createClass({
-	  displayName: 'Task',
+	var TaskName = React.createClass({
+	  displayName: 'TaskName',
 
 	  render: function render() {
 	    return React.createElement(
+	      'header',
+	      { className: 'task-item-name task-item-contents' },
+	      React.createElement(
+	        'strong',
+	        null,
+	        this.props.name
+	      )
+	    );
+	  }
+	});
+
+	var TaskTime = React.createClass({
+	  displayName: 'TaskTime',
+
+	  render: function render() {
+	    var hours = Math.floor(this.props.time / 60 / 60);
+	    var minutes = Math.floor(this.props.time / 60 % 60);
+	    var seconds = this.props.time % 60;
+	    hours = hours.toString().length == 1 ? '0' + hours : hours;
+	    minutes = minutes.toString().length == 1 ? '0' + minutes : minutes;
+	    seconds = seconds.toString().length == 1 ? '0' + seconds : seconds;
+	    return React.createElement(
 	      'div',
-	      { className: 'list-group-item' },
+	      { className: 'task-item-timer task-item-contents' },
+	      hours,
+	      ':',
+	      minutes,
+	      ':',
+	      seconds
+	    );
+	  }
+	});
+
+	var Task = React.createClass({
+	  displayName: 'Task',
+
+	  tick: function tick() {
+	    this.setState({ time: this.state.time + 1 });
+	  },
+	  handleClick: function handleClick(e) {
+	    if (!this.state.isStart) {
+	      this.interval = setInterval(this.tick, 1000);
+	      this.setState({ isStart: true });
+	    }
+	  },
+	  render: function render() {
+	    this.state = this.state === null ? this.props.task : this.state;
+
+	    return React.createElement(
+	      'div',
+	      { className: 'task-item list-group-item' },
 	      React.createElement(
 	        'div',
-	        { className: 'media-body' },
+	        { className: 'task-item-inner media-body' },
+	        React.createElement(TaskName, { name: this.state.name }),
+	        React.createElement(TaskTime, { time: this.state.time }),
 	        React.createElement(
-	          'strong',
-	          null,
-	          this.props.children
+	          'footer',
+	          { className: 'task-item-buttons task-item-contents' },
+	          React.createElement('span', { className: 'icon icon-play', onClick: this.handleClick })
 	        )
 	      )
 	    );
@@ -110,11 +161,7 @@
 	    tasks = this.props.tasks !== null ? this.props.tasks : tasks;
 	    if (tasks.length !== 0) {
 	      var taskNodes = this.props.tasks.map(function (task) {
-	        return React.createElement(
-	          Task,
-	          null,
-	          task.name
-	        );
+	        return React.createElement(Task, { task: task });
 	      });
 	    } else {
 	      var taskNodes = function taskNodes() {
@@ -139,9 +186,11 @@
 	  hundleSubmit: function hundleSubmit(e) {
 	    e.preventDefault();
 	    var task = ReactDOM.findDOMNode(this.refs.name).value.trim();
+	    var time = 0;
+	    var isStart = false;
 	    if (task !== '') {
-	      tasks.push({ name: task });
-	      this.props.onTaskSubmit({ name: task });
+	      tasks.push({ name: task, time: time, isStart: isStart });
+	      this.props.onTaskSubmit({ name: task, time: time, isStart: isStart });
 	    }
 
 	    if (strage.getItem('tasks') !== null) {
@@ -385,6 +434,9 @@
 	var queueIndex = -1;
 
 	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
 	    draining = false;
 	    if (currentQueue.length) {
 	        queue = currentQueue.concat(queue);

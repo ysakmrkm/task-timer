@@ -74,4 +74,29 @@
   padding: 10px;
   border-top: 1px solid #ddd; }
 
+.task-item-inner {
+  display: table;
+  width: 100%; }
+.task-item-contents {
+  display: table-cell;
+  vertical-align: middle; }
+.task-item-name {
+  width: 40%;
+  font-size: 1.6rem; }
+.task-item-timer {
+  width: 30%;
+  text-align: center;
+  font-size: 2.4rem; }
+.task-item-buttons {
+  width: 30%;
+  text-align: right; }
+  .task-item-buttons .icon {
+    font-size: 1.3rem;
+    margin-left: 20px;
+    cursor: pointer; }
+    .task-item-buttons .icon:hover {
+      opacity: .5; }
+    .task-item-buttons .icon-play {
+      font-size: 2rem; }
+
 /*# sourceMappingURL=styles.css.map */
