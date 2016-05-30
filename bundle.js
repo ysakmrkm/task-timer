@@ -127,6 +127,14 @@
 
 	  tick: function tick() {
 	    this.setState({ time: this.state.time + 1 });
+	    var currentTask = this.state;
+	    var storedTasks = JSON.parse(strage.getItem('tasks'));
+	    Object.keys(storedTasks).forEach(function (key) {
+	      if (storedTasks[key].name === currentTask.name) {
+	        storedTasks[key].time = currentTask.time;
+	        strage.setItem('tasks', JSON.stringify(storedTasks));
+	      }
+	    });
 	  },
 	  handleStart: function handleStart(e) {
 	    if (!this.state.isStart) {

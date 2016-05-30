@@ -1,8 +1,12 @@
+'use strict';
+
 const electron = require('electron')
 // Module to control application life.
 const app = electron.app
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow
+
+let quit = false
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -26,6 +30,13 @@ function createWindow () {
   // Open the DevTools.
   //mainWindow.webContents.openDevTools()
 
+  mainWindow.on('close', function(e){
+      if(!quit){
+          e.preventDefault();
+          mainWindow.hide();
+      }
+  });
+
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
@@ -33,6 +44,16 @@ function createWindow () {
     // when you should delete the corresponding element.
     mainWindow = null
   })
+
+  // You can use 'before-quit' instead of (or with) the close event
+  app.on('before-quit', function () {
+      // Handle menu-item or keyboard shortcut quit here
+      quit = true;
+  });
+
+  app.on('activate', function(){
+      mainWindow.show();
+  });
 }
 
 // This method will be called when Electron has finished
@@ -56,6 +77,10 @@ app.on('activate', function () {
     createWindow()
   }
 })
+
+app.on('will-quit', function () {
+    mainWindow = null;
+});
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
