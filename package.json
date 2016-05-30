@@ -8,6 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "classnames": "^2.2.5",
     "electron-prebuilt": "^0.37.8",
     "photon": "git+https://github.com/connors/photon.git"
   },

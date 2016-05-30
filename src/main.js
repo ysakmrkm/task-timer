@@ -1,5 +1,6 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
+var classNames = require('classnames');
 
 var tasks = [];
 var strage = localStorage;
@@ -48,14 +49,32 @@ var Task = React.createClass({
   tick: function() {
     this.setState({time: this.state.time + 1});
   },
-  handleClick: function(e) {
+  handleStart: function(e) {
     if(!this.state.isStart) {
       this.interval = setInterval(this.tick, 1000);
       this.setState({isStart: true});
     }
   },
+  handlePause: function(e) {
+    if(this.state.isStart) {
+      clearInterval(this.interval);
+      this.setState({isStart: false});
+    }
+  },
   render: function() {
     this.state = this.state === null ? this.props.task : this.state;
+
+    var classNameButtonPause = classNames({
+      'icon': true,
+      'icon-pause': true,
+      'is-active': this.state.isStart
+    });
+
+    var classNameButtonStart = classNames({
+      'icon': true,
+      'icon-play': true,
+      'is-active': !this.state.isStart
+    });
 
     return (
       <div className="task-item list-group-item">
@@ -63,7 +82,8 @@ var Task = React.createClass({
       <TaskName name={this.state.name} />
       <TaskTime time={this.state.time} />
       <footer className="task-item-buttons task-item-contents">
-      <span className="icon icon-play" onClick={this.handleClick}></span>
+      <span className={classNameButtonPause} onClick={this.handlePause}></span>
+      <span className={classNameButtonStart} onClick={this.handleStart}></span>
       </footer>
       </div>
       </div>

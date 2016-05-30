@@ -134,16 +134,18 @@
 		text-align: right;
 
 		.icon {
+			display: none;
 			font-size: 1.3rem;
 			margin-left: 20px;
 			cursor: pointer;
+			font-size: 2rem;
 
 			&:hover {
 				opacity: .5;
 			}
 
-			&-play {
-				font-size: 2rem;
+			&.is-active {
+				display: inline;
 			}
 		}
 	}
