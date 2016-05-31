@@ -92,13 +92,16 @@
   text-align: right; }
   .task-item-buttons .icon {
     display: none;
-    font-size: 1.3rem;
     margin-left: 20px;
     cursor: pointer;
+    vertical-align: middle;
+    line-height: 1;
     font-size: 2rem; }
     .task-item-buttons .icon:hover {
       opacity: .5; }
     .task-item-buttons .icon.is-active {
       display: inline; }
+    .task-item-buttons .icon-cancel {
+      font-size: 2.4rem; }
 
 /*# sourceMappingURL=styles.css.map */

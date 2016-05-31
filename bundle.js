@@ -126,30 +126,76 @@
 	  displayName: 'Task',
 
 	  tick: function tick() {
-	    this.setState({ time: this.state.time + 1 });
-	    var currentTask = this.state;
-	    var storedTasks = JSON.parse(strage.getItem('tasks'));
-	    Object.keys(storedTasks).forEach(function (key) {
-	      if (storedTasks[key].name === currentTask.name) {
-	        storedTasks[key].time = currentTask.time;
-	        strage.setItem('tasks', JSON.stringify(storedTasks));
-	      }
+	    this.setState({ time: this.state.time + 1 }, function () {
+	      var currentTask = this.state;
+	      var storedTasks = JSON.parse(strage.getItem('tasks'));
+
+	      Object.keys(storedTasks).forEach(function (key) {
+	        if (storedTasks[key].name === currentTask.name) {
+	          storedTasks[key].time = currentTask.time;
+	          storedTasks[key].isStart = currentTask.isStart;
+	          strage.setItem('tasks', JSON.stringify(storedTasks));
+	        }
+	      });
 	    });
 	  },
 	  handleStart: function handleStart(e) {
 	    if (!this.state.isStart) {
+	      this.setState({ isStart: true }, function () {
+	        var currentTask = this.state;
+	        var storedTasks = JSON.parse(strage.getItem('tasks'));
+
+	        Object.keys(storedTasks).forEach(function (key) {
+	          if (storedTasks[key].name === currentTask.name) {
+	            storedTasks[key].time = currentTask.time;
+	            storedTasks[key].isStart = currentTask.isStart;
+	            strage.setItem('tasks', JSON.stringify(storedTasks));
+	          }
+	        });
+	      });
+
 	      this.interval = setInterval(this.tick, 1000);
-	      this.setState({ isStart: true });
 	    }
 	  },
 	  handlePause: function handlePause(e) {
 	    if (this.state.isStart) {
 	      clearInterval(this.interval);
-	      this.setState({ isStart: false });
+	      this.setState({ isStart: false }, function () {
+	        var currentTask = this.state;
+	        var storedTasks = JSON.parse(strage.getItem('tasks'));
+
+	        Object.keys(storedTasks).forEach(function (key) {
+	          if (storedTasks[key].name === currentTask.name) {
+	            storedTasks[key].isStart = currentTask.isStart;
+	            strage.setItem('tasks', JSON.stringify(storedTasks));
+	          }
+	        });
+	      });
 	    }
+	  },
+	  handleReset: function handleReset(e) {
+	    clearInterval(this.interval);
+	    this.setState({ time: 0, isStart: false }, function () {
+	      var currentTask = this.state;
+	      var storedTasks = JSON.parse(strage.getItem('tasks'));
+
+	      Object.keys(storedTasks).forEach(function (key) {
+	        if (storedTasks[key].name === currentTask.name) {
+	          storedTasks[key].time = 0;
+	          storedTasks[key].isStart = false;
+	          strage.setItem('tasks', JSON.stringify(storedTasks));
+	        }
+	      });
+	    });
 	  },
 	  render: function render() {
 	    this.state = this.state === null ? this.props.task : this.state;
+
+	    var classNameButtonReset = classNames({
+	      'icon': true,
+	      'icon-cancel': true,
+	      'is-active': true
+	    });
 
 	    var classNameButtonPause = classNames({
 	      'icon': true,
@@ -174,6 +220,7 @@
 	        React.createElement(
 	          'footer',
 	          { className: 'task-item-buttons task-item-contents' },
+	          React.createElement('span', { className: classNameButtonReset, onClick: this.handleReset }),
 	          React.createElement('span', { className: classNameButtonPause, onClick: this.handlePause }),
 	          React.createElement('span', { className: classNameButtonStart, onClick: this.handleStart })
 	        )

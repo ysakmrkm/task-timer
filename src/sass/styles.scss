@@ -135,9 +135,10 @@
 
 		.icon {
 			display: none;
-			font-size: 1.3rem;
 			margin-left: 20px;
 			cursor: pointer;
+			vertical-align: middle;
+			line-height: 1;
 			font-size: 2rem;
 
 			&:hover {
@@ -146,6 +147,10 @@
 
 			&.is-active {
 				display: inline;
+			}
+
+			&-cancel {
+				font-size: 2.4rem;
 			}
 		}
 	}
