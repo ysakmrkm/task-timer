@@ -2,7 +2,6 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var classNames = require('classnames');
 
-var tasks = [];
 var strage = localStorage;
 
 var Header = React.createClass({
@@ -33,9 +32,10 @@ var TaskName = React.createClass({
 
 var TaskTime = React.createClass({
   render: function() {
-    var hours = Math.floor(this.props.time / 60 / 60);
-    var minutes = Math.floor(this.props.time / 60 % 60);
-    var seconds = this.props.time % 60;
+    var now = this.state !== null ? this.state.time : this.props.time
+    var hours = Math.floor(now / 60 / 60);
+    var minutes = Math.floor(now / 60 % 60);
+    var seconds = now % 60;
     hours = hours.toString().length == 1 ? '0'+hours : hours;
     minutes = minutes.toString().length == 1 ? '0'+minutes : minutes;
     seconds = seconds.toString().length == 1 ? '0'+seconds : seconds;
@@ -47,7 +47,27 @@ var TaskTime = React.createClass({
 
 var Task = React.createClass({
   tick: function() {
-    this.setState({time: this.state.time + 1}, function(){
+    if(this.isMounted()) {
+      this.setState({time: this.state.time + 1}, function(){
+        var currentTask = this.state;
+        var storedTasks = JSON.parse(strage.getItem('tasks'));
+
+        Object.keys(storedTasks).forEach(function(key){
+          if(storedTasks[key].name === currentTask.name) {
+            storedTasks[key].time = currentTask.time;
+            storedTasks[key].isStart = currentTask.isStart;
+            strage.setItem('tasks', JSON.stringify(storedTasks));
+          }
+        });
+
+        this.props.onStart(this.state)
+      });
+    }
+  },
+  handleStart: function(e) {
+    var task = this.state !== null ? this.state : this.props.task;
+
+    this.setState({name: task.name, time: task.time, isStart: true}, function(){
       var currentTask = this.state;
       var storedTasks = JSON.parse(strage.getItem('tasks'));
 
@@ -59,43 +79,27 @@ var Task = React.createClass({
         }
       });
     });
-  },
-  handleStart: function(e) {
-    if(!this.state.isStart) {
-      this.setState({isStart: true}, function(){
-        var currentTask = this.state;
-        var storedTasks = JSON.parse(strage.getItem('tasks'));
 
-        Object.keys(storedTasks).forEach(function(key){
-          if(storedTasks[key].name === currentTask.name) {
-            storedTasks[key].time = currentTask.time;
-            storedTasks[key].isStart = currentTask.isStart;
-            strage.setItem('tasks', JSON.stringify(storedTasks));
-          }
-        });
-      });
-
-      this.interval = setInterval(this.tick, 1000);
-    }
+    this.interval = setInterval(this.tick, 1000);
   },
   handlePause: function(e) {
-    if(this.state.isStart) {
-      clearInterval(this.interval);
-      this.setState({isStart: false}, function(){
-        var currentTask = this.state;
-        var storedTasks = JSON.parse(strage.getItem('tasks'));
+    clearInterval(this.interval);
 
-        Object.keys(storedTasks).forEach(function(key){
-          if(storedTasks[key].name === currentTask.name) {
-            storedTasks[key].isStart = currentTask.isStart;
-            strage.setItem('tasks', JSON.stringify(storedTasks));
-          }
-        });
+    this.setState({name: this.state.name, time: this.state.time, isStart: false}, function(){
+      var currentTask = this.state;
+      var storedTasks = JSON.parse(strage.getItem('tasks'));
+
+      Object.keys(storedTasks).forEach(function(key){
+        if(storedTasks[key].name === currentTask.name) {
+          storedTasks[key].isStart = currentTask.isStart;
+          strage.setItem('tasks', JSON.stringify(storedTasks));
+        }
       });
-    }
+    });
   },
   handleReset: function(e) {
     clearInterval(this.interval);
+
     this.setState({time: 0, isStart: false}, function(){
       var currentTask = this.state;
       var storedTasks = JSON.parse(strage.getItem('tasks'));
@@ -109,8 +113,32 @@ var Task = React.createClass({
       });
     });
   },
+  handleRemove: function(e) {
+    clearInterval(this.interval);
+
+    this.props.onRemove(this.state)
+  },
+  componentWillMount(e) {
+    this.setState(this.props.task)
+  },
+  componentWillReceiveProps: function(nextProps) {
+    if(this.state.name !== nextProps.task.name) {
+      this.setState(nextProps.task, function(){
+        this.handleStart()
+      })
+    }
+  },
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  },
   render: function() {
-    this.state = this.state === null ? this.props.task : this.state;
+    var now = this.state !== null ? this.state : this.props.task
+
+    var classNameButtonRemove = classNames({
+      'icon': true,
+      'icon-trash': true,
+      'is-active': true
+    });
 
     var classNameButtonReset = classNames({
       'icon': true,
@@ -121,21 +149,22 @@ var Task = React.createClass({
     var classNameButtonPause = classNames({
       'icon': true,
       'icon-pause': true,
-      'is-active': this.state.isStart
+      'is-active': now.isStart
     });
 
     var classNameButtonStart = classNames({
       'icon': true,
       'icon-play': true,
-      'is-active': !this.state.isStart
+      'is-active': !now.isStart
     });
 
     return (
       <div className="task-item list-group-item">
       <div className="task-item-inner media-body">
-      <TaskName name={this.state.name} />
-      <TaskTime time={this.state.time} />
+      <TaskName name={now.name} />
+      <TaskTime time={now.time} />
       <footer className="task-item-buttons task-item-contents">
+      <span className={classNameButtonRemove} onClick={this.handleRemove}></span>
       <span className={classNameButtonReset} onClick={this.handleReset}></span>
       <span className={classNameButtonPause} onClick={this.handlePause}></span>
       <span className={classNameButtonStart} onClick={this.handleStart}></span>
@@ -147,12 +176,33 @@ var Task = React.createClass({
 });
 
 var TaskList = React.createClass({
+  componentWillReceiveProps: function(e) {
+    this.setState({tasks: e.tasks})
+  },
+  startTask: function(task){
+    var updateTasks = this.props.tasks;
+
+    this.props.tasks.forEach(function(val, index) {
+      if(task.name === val.name) {
+        updateTasks[index] = task
+      }
+    });
+
+    this.setState({tasks: updateTasks})
+  },
+  removeTask: function(task){
+    this.props.onTaskRemove(task)
+  },
   render: function() {
-    tasks = this.props.tasks !== null ? this.props.tasks : tasks;
-    if(tasks.length !== 0) {
-      var taskNodes = this.props.tasks.map(function(task) {
+    var renderTasks = this.props.tasks;
+
+    if(renderTasks !== null && renderTasks.length !== 0) {
+      var addTaskFunc = this.addTask;
+      var removeTaskFunc = this.removeTask;
+      var startTaskFunc = this.startTask;
+      var taskNodes = renderTasks.map(function(task) {
         return (
-          <Task task={task}></Task>
+          <Task task={task} onAdd={addTaskFunc} onStart={startTaskFunc} onRemove={removeTaskFunc}></Task>
         );
       });
     } else {
@@ -178,18 +228,10 @@ var AddTaskBox = React.createClass({
     var task = ReactDOM.findDOMNode(this.refs.name).value.trim();
     var time = 0;
     var isStart = false;
+
     if(task !== '') {
-      tasks.push({name: task, time: time, isStart: isStart});
       this.props.onTaskSubmit({name: task, time: time, isStart: isStart});
     }
-
-    if(strage.getItem('tasks') !== null) {
-      var storedTasks = strage.getItem('tasks');
-    } else {
-      var storedTasks = strage;
-    }
-
-    strage.setItem('tasks', JSON.stringify(tasks));
 
     ReactDOM.findDOMNode(this.refs.name).value = '';
   },
@@ -223,21 +265,38 @@ var Footer = React.createClass({
 
 var AppBox = React.createClass({
   getInitialState: function() {
-    return {tasks: JSON.parse(strage.getItem('tasks'))};
+    var initialTasks = JSON.parse(strage.getItem('tasks')) !== null ? JSON.parse(strage.getItem('tasks')) : this.props.tasks
+    return {tasks: initialTasks};
   },
-  componentDidMount: function() {
-    this.props = {tasks: JSON.parse(strage.getItem('tasks'))};
-    this.setState({tasks: this.state.tasks});
+  componentWillReceiveProps: function(e) {
+    this.setState(e.task)
   },
   hundleTaskSubmit: function(task) {
-    tasks = this.state.tasks !== null ? this.state.tasks : tasks;
-    this.setState({tasks: tasks});
+    var addTask = JSON.parse(strage.getItem('tasks')) !== null ? JSON.parse(strage.getItem('tasks')) : [];
+
+    addTask.push(task)
+
+    this.setState({tasks: addTask}, function(){
+      strage.setItem('tasks', JSON.stringify(addTask));
+    });
+  },
+  handleTaskRemove: function(task) {
+    var remainTasks = this.state.tasks
+    var removeTask = task
+
+    remainTasks = remainTasks.filter(function(task) {
+      return task.name !== removeTask.name
+    })
+
+    strage.setItem('tasks', JSON.stringify(remainTasks));
+
+    this.setState({ tasks: remainTasks })
   },
   render: function() {
     return (
       <div className="window">
       <Header />
-      <TaskList tasks={this.state.tasks} />
+      <TaskList tasks={this.state.tasks} onTaskRemove={this.handleTaskRemove} />
       <AddTaskBox onTaskSubmit={this.hundleTaskSubmit} />
       <Footer />
       </div>
@@ -246,6 +305,6 @@ var AppBox = React.createClass({
 });
 
 ReactDOM.render(
-  <AppBox tasks={tasks} />,
+  <AppBox tasks={[]} />,
   document.getElementById('app-box')
 );
