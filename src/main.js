@@ -1,6 +1,7 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 var classNames = require('classnames');
+var ipcRenderer = electronRequire('electron').ipcRenderer;
 
 var strage = localStorage;
 
@@ -78,6 +79,8 @@ var Task = React.createClass({
           strage.setItem('tasks', JSON.stringify(storedTasks));
         }
       });
+
+      this.props.onStart(this.state)
     });
 
     this.interval = setInterval(this.tick, 1000);
@@ -95,6 +98,8 @@ var Task = React.createClass({
           strage.setItem('tasks', JSON.stringify(storedTasks));
         }
       });
+
+      this.props.onPause(this.state)
     });
   },
   handleReset: function(e) {
@@ -111,6 +116,8 @@ var Task = React.createClass({
           strage.setItem('tasks', JSON.stringify(storedTasks));
         }
       });
+
+      this.props.onReset(this.state)
     });
   },
   handleRemove: function(e) {
@@ -188,7 +195,56 @@ var TaskList = React.createClass({
       }
     });
 
-    this.setState({tasks: updateTasks})
+    this.setState({tasks: updateTasks}, function(){
+      var activeCount = 0;
+      updateTasks.forEach(function(task){
+        if(task.isStart) {
+          activeCount++;
+        }
+      })
+
+      ipcRenderer.send("activeCount", activeCount);
+    })
+  },
+  pauseTask: function(task){
+    var updateTasks = this.props.tasks;
+
+    this.props.tasks.forEach(function(val, index) {
+      if(task.name === val.name) {
+        updateTasks[index] = task
+      }
+    });
+
+    this.setState({tasks: updateTasks}, function(){
+      var activeCount = 0;
+      updateTasks.forEach(function(task){
+        if(task.isStart) {
+          activeCount++;
+        }
+      })
+
+      ipcRenderer.send("activeCount", activeCount);
+    })
+  },
+  resetTask: function(task){
+    var updateTasks = this.props.tasks;
+
+    this.props.tasks.forEach(function(val, index) {
+      if(task.name === val.name) {
+        updateTasks[index] = task
+      }
+    });
+
+    this.setState({tasks: updateTasks}, function(){
+      var activeCount = 0;
+      updateTasks.forEach(function(task){
+        if(task.isStart) {
+          activeCount++;
+        }
+      })
+
+      ipcRenderer.send("activeCount", activeCount);
+    })
   },
   removeTask: function(task){
     this.props.onTaskRemove(task)
@@ -200,9 +256,18 @@ var TaskList = React.createClass({
       var addTaskFunc = this.addTask;
       var removeTaskFunc = this.removeTask;
       var startTaskFunc = this.startTask;
+      var pauseTaskFunc = this.pauseTask;
+      var resetTaskFunc = this.resetTask;
       var taskNodes = renderTasks.map(function(task) {
         return (
-          <Task task={task} onAdd={addTaskFunc} onStart={startTaskFunc} onRemove={removeTaskFunc}></Task>
+          <Task
+            task={task}
+            onAdd={addTaskFunc}
+            onStart={startTaskFunc}
+            onPause={pauseTaskFunc}
+            onReset={resetTaskFunc}
+            onRemove={removeTaskFunc}
+          ></Task>
         );
       });
     } else {
@@ -266,6 +331,7 @@ var Footer = React.createClass({
 var AppBox = React.createClass({
   getInitialState: function() {
     var initialTasks = JSON.parse(strage.getItem('tasks')) !== null ? JSON.parse(strage.getItem('tasks')) : this.props.tasks
+
     return {tasks: initialTasks};
   },
   componentWillReceiveProps: function(e) {
@@ -290,7 +356,16 @@ var AppBox = React.createClass({
 
     strage.setItem('tasks', JSON.stringify(remainTasks));
 
-    this.setState({ tasks: remainTasks })
+    this.setState({ tasks: remainTasks }, function(){
+      var activeCount = 0;
+      remainTasks.forEach(function(task){
+        if(task.isStart) {
+          activeCount++;
+        }
+      })
+
+      ipcRenderer.send("activeCount", activeCount);
+    })
   },
   render: function() {
     return (
