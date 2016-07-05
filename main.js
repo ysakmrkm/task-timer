@@ -12,6 +12,12 @@ let quit = false
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
+const powerSaveBlocker = electron.powerSaveBlocker;
+
+const id = powerSaveBlocker.start('prevent-display-sleep');
+
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
