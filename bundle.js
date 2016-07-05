@@ -204,7 +204,9 @@
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
 	    if (this.state.name !== nextProps.task.name) {
 	      this.setState(nextProps.task, function () {
-	        this.handleStart();
+	        if (nextProps.task.isStart) {
+	          this.handleStart();
+	        }
 	      });
 	    }
 	  },
