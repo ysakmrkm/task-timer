@@ -338,6 +338,12 @@ var AppBox = React.createClass({
   getInitialState: function() {
     var initialTasks = JSON.parse(strage.getItem('tasks')) !== null ? JSON.parse(strage.getItem('tasks')) : this.props.tasks
 
+    initialTasks.forEach(function(task){
+      task.isStart = false;
+    })
+
+    strage.setItem('tasks', JSON.stringify(initialTasks));
+
     return {tasks: initialTasks};
   },
   componentWillReceiveProps: function(e) {
