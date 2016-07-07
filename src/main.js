@@ -5,6 +5,8 @@ var ipcRenderer = electronRequire('electron').ipcRenderer;
 
 var strage = localStorage;
 
+var id = JSON.parse(strage.getItem('id')) !== null ? JSON.parse(strage.getItem('id')) + 1 : 0;
+
 var Header = React.createClass({
   render: function() {
     return (
@@ -263,6 +265,7 @@ var TaskList = React.createClass({
       var taskNodes = renderTasks.map(function(task) {
         return (
           <Task
+            key={task.id}
             task={task}
             onAdd={addTaskFunc}
             onStart={startTaskFunc}
@@ -297,10 +300,11 @@ var AddTaskBox = React.createClass({
     var isStart = false;
 
     if(task !== '') {
-      this.props.onTaskSubmit({name: task, time: time, isStart: isStart});
+      this.props.onTaskSubmit({id: id, name: task, time: time, isStart: isStart});
     }
 
     ReactDOM.findDOMNode(this.refs.name).value = '';
+    id++;
   },
   render: function() {
     return (
@@ -346,6 +350,7 @@ var AppBox = React.createClass({
 
     this.setState({tasks: addTask}, function(){
       strage.setItem('tasks', JSON.stringify(addTask));
+      strage.setItem('id', JSON.stringify(task.id));
     });
   },
   handleTaskRemove: function(task) {

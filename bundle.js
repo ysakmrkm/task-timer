@@ -61,6 +61,8 @@
 
 	var strage = localStorage;
 
+	var id = JSON.parse(strage.getItem('id')) !== null ? JSON.parse(strage.getItem('id')) + 1 : 0;
+
 	var Header = React.createClass({
 	  displayName: 'Header',
 
@@ -349,6 +351,7 @@
 	      var resetTaskFunc = this.resetTask;
 	      var taskNodes = renderTasks.map(function (task) {
 	        return React.createElement(Task, {
+	          key: task.id,
 	          task: task,
 	          onAdd: addTaskFunc,
 	          onStart: startTaskFunc,
@@ -384,10 +387,11 @@
 	    var isStart = false;
 
 	    if (task !== '') {
-	      this.props.onTaskSubmit({ name: task, time: time, isStart: isStart });
+	      this.props.onTaskSubmit({ id: id, name: task, time: time, isStart: isStart });
 	    }
 
 	    ReactDOM.findDOMNode(this.refs.name).value = '';
+	    id++;
 	  },
 	  render: function render() {
 	    return React.createElement(
@@ -445,6 +449,7 @@
 
 	    this.setState({ tasks: addTask }, function () {
 	      strage.setItem('tasks', JSON.stringify(addTask));
+	      strage.setItem('id', JSON.stringify(task.id));
 	    });
 	  },
 	  handleTaskRemove: function handleTaskRemove(task) {
