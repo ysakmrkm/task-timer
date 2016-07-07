@@ -8,9 +8,17 @@ const BrowserWindow = electron.BrowserWindow
 
 let quit = false
 
+const ipcMain = electron.ipcMain;
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
+
+const powerSaveBlocker = electron.powerSaveBlocker;
+
+const id = powerSaveBlocker.start('prevent-display-sleep');
+
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
 
 function createWindow () {
   // Create the browser window.
@@ -53,6 +61,14 @@ function createWindow () {
 
   app.on('activate', function(){
       mainWindow.show();
+  });
+
+  ipcMain.on("activeCount", (sender, count) => {
+    if(count > 0) {
+      app.dock.setBadge(count.toString());
+    } else {
+      app.dock.setBadge('');
+    }
   });
 }
 
