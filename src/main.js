@@ -337,14 +337,16 @@ var Footer = React.createClass({
 var AppBox = React.createClass({
   getInitialState: function() {
     var initialTasks = JSON.parse(strage.getItem('tasks')) !== null ? JSON.parse(strage.getItem('tasks')) : this.props.tasks
+    var initialArchives = JSON.parse(strage.getItem('archives')) !== null ? JSON.parse(strage.getItem('archives')) : this.props.archives
 
     initialTasks.forEach(function(task){
       task.isStart = false;
     })
 
     strage.setItem('tasks', JSON.stringify(initialTasks));
+    strage.setItem('archives', JSON.stringify(initialArchives));
 
-    return {tasks: initialTasks};
+    return {tasks: initialTasks, archives: initialArchives};
   },
   componentWillReceiveProps: function(e) {
     this.setState(e.task)
@@ -362,6 +364,7 @@ var AppBox = React.createClass({
   handleTaskRemove: function(task) {
     var remainTasks = this.state.tasks
     var removeTask = task
+    var archivedTasks = JSON.parse(strage.getItem('archives')) !== null ? JSON.parse(strage.getItem('archives')) : [];
 
     remainTasks = remainTasks.filter(function(task) {
       return task.id !== removeTask.id
@@ -379,6 +382,10 @@ var AppBox = React.createClass({
 
       ipcRenderer.send("activeCount", activeCount);
     })
+
+    archivedTasks.push(removeTask)
+
+    strage.setItem('archives', JSON.stringify(archivedTasks));
   },
   render: function() {
     return (
@@ -393,6 +400,6 @@ var AppBox = React.createClass({
 });
 
 ReactDOM.render(
-  <AppBox tasks={[]} />,
+  <AppBox tasks={[]} archives={[]} />,
   document.getElementById('app-box')
 );
