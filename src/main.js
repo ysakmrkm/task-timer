@@ -56,7 +56,7 @@ var Task = React.createClass({
         var storedTasks = JSON.parse(strage.getItem('tasks'));
 
         Object.keys(storedTasks).forEach(function(key){
-          if(storedTasks[key].name === currentTask.name) {
+          if(storedTasks[key].id === currentTask.id) {
             storedTasks[key].time = currentTask.time;
             storedTasks[key].isStart = currentTask.isStart;
             strage.setItem('tasks', JSON.stringify(storedTasks));
@@ -75,7 +75,7 @@ var Task = React.createClass({
       var storedTasks = JSON.parse(strage.getItem('tasks'));
 
       Object.keys(storedTasks).forEach(function(key){
-        if(storedTasks[key].name === currentTask.name) {
+        if(storedTasks[key].id === currentTask.id) {
           storedTasks[key].time = currentTask.time;
           storedTasks[key].isStart = currentTask.isStart;
           strage.setItem('tasks', JSON.stringify(storedTasks));
@@ -95,7 +95,7 @@ var Task = React.createClass({
       var storedTasks = JSON.parse(strage.getItem('tasks'));
 
       Object.keys(storedTasks).forEach(function(key){
-        if(storedTasks[key].name === currentTask.name) {
+        if(storedTasks[key].id === currentTask.id) {
           storedTasks[key].isStart = currentTask.isStart;
           strage.setItem('tasks', JSON.stringify(storedTasks));
         }
@@ -112,7 +112,7 @@ var Task = React.createClass({
       var storedTasks = JSON.parse(strage.getItem('tasks'));
 
       Object.keys(storedTasks).forEach(function(key){
-        if(storedTasks[key].name === currentTask.name) {
+        if(storedTasks[key].id === currentTask.id) {
           storedTasks[key].time = 0;
           storedTasks[key].isStart = false;
           strage.setItem('tasks', JSON.stringify(storedTasks));
@@ -131,7 +131,7 @@ var Task = React.createClass({
     this.setState(this.props.task)
   },
   componentWillReceiveProps: function(nextProps) {
-    if(this.state.name !== nextProps.task.name) {
+    if(this.state.id !== nextProps.task.id) {
       this.setState(nextProps.task, function(){
         if(nextProps.task.isStart) {
           this.handleStart()
@@ -194,7 +194,7 @@ var TaskList = React.createClass({
     var updateTasks = this.props.tasks;
 
     this.props.tasks.forEach(function(val, index) {
-      if(task.name === val.name) {
+      if(task.id === val.id) {
         updateTasks[index] = task
       }
     });
@@ -214,7 +214,7 @@ var TaskList = React.createClass({
     var updateTasks = this.props.tasks;
 
     this.props.tasks.forEach(function(val, index) {
-      if(task.name === val.name) {
+      if(task.id === val.id) {
         updateTasks[index] = task
       }
     });
@@ -234,7 +234,7 @@ var TaskList = React.createClass({
     var updateTasks = this.props.tasks;
 
     this.props.tasks.forEach(function(val, index) {
-      if(task.name === val.name) {
+      if(task.id === val.id) {
         updateTasks[index] = task
       }
     });
@@ -364,7 +364,7 @@ var AppBox = React.createClass({
     var removeTask = task
 
     remainTasks = remainTasks.filter(function(task) {
-      return task.name !== removeTask.name
+      return task.id !== removeTask.id
     })
 
     strage.setItem('tasks', JSON.stringify(remainTasks));
