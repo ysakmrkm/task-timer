@@ -5,6 +5,8 @@ var ipcRenderer = electronRequire('electron').ipcRenderer;
 
 var strage = localStorage;
 
+var id = JSON.parse(strage.getItem('id')) !== null ? JSON.parse(strage.getItem('id')) + 1 : 0;
+
 var Header = React.createClass({
   render: function() {
     return (
@@ -54,7 +56,7 @@ var Task = React.createClass({
         var storedTasks = JSON.parse(strage.getItem('tasks'));
 
         Object.keys(storedTasks).forEach(function(key){
-          if(storedTasks[key].name === currentTask.name) {
+          if(storedTasks[key].id === currentTask.id) {
             storedTasks[key].time = currentTask.time;
             storedTasks[key].isStart = currentTask.isStart;
             strage.setItem('tasks', JSON.stringify(storedTasks));
@@ -73,7 +75,7 @@ var Task = React.createClass({
       var storedTasks = JSON.parse(strage.getItem('tasks'));
 
       Object.keys(storedTasks).forEach(function(key){
-        if(storedTasks[key].name === currentTask.name) {
+        if(storedTasks[key].id === currentTask.id) {
           storedTasks[key].time = currentTask.time;
           storedTasks[key].isStart = currentTask.isStart;
           strage.setItem('tasks', JSON.stringify(storedTasks));
@@ -93,7 +95,7 @@ var Task = React.createClass({
       var storedTasks = JSON.parse(strage.getItem('tasks'));
 
       Object.keys(storedTasks).forEach(function(key){
-        if(storedTasks[key].name === currentTask.name) {
+        if(storedTasks[key].id === currentTask.id) {
           storedTasks[key].isStart = currentTask.isStart;
           strage.setItem('tasks', JSON.stringify(storedTasks));
         }
@@ -110,7 +112,7 @@ var Task = React.createClass({
       var storedTasks = JSON.parse(strage.getItem('tasks'));
 
       Object.keys(storedTasks).forEach(function(key){
-        if(storedTasks[key].name === currentTask.name) {
+        if(storedTasks[key].id === currentTask.id) {
           storedTasks[key].time = 0;
           storedTasks[key].isStart = false;
           strage.setItem('tasks', JSON.stringify(storedTasks));
@@ -129,7 +131,7 @@ var Task = React.createClass({
     this.setState(this.props.task)
   },
   componentWillReceiveProps: function(nextProps) {
-    if(this.state.name !== nextProps.task.name) {
+    if(this.state.id !== nextProps.task.id) {
       this.setState(nextProps.task, function(){
         if(nextProps.task.isStart) {
           this.handleStart()
@@ -192,7 +194,7 @@ var TaskList = React.createClass({
     var updateTasks = this.props.tasks;
 
     this.props.tasks.forEach(function(val, index) {
-      if(task.name === val.name) {
+      if(task.id === val.id) {
         updateTasks[index] = task
       }
     });
@@ -212,7 +214,7 @@ var TaskList = React.createClass({
     var updateTasks = this.props.tasks;
 
     this.props.tasks.forEach(function(val, index) {
-      if(task.name === val.name) {
+      if(task.id === val.id) {
         updateTasks[index] = task
       }
     });
@@ -232,7 +234,7 @@ var TaskList = React.createClass({
     var updateTasks = this.props.tasks;
 
     this.props.tasks.forEach(function(val, index) {
-      if(task.name === val.name) {
+      if(task.id === val.id) {
         updateTasks[index] = task
       }
     });
@@ -263,6 +265,7 @@ var TaskList = React.createClass({
       var taskNodes = renderTasks.map(function(task) {
         return (
           <Task
+            key={task.id}
             task={task}
             onAdd={addTaskFunc}
             onStart={startTaskFunc}
@@ -297,10 +300,11 @@ var AddTaskBox = React.createClass({
     var isStart = false;
 
     if(task !== '') {
-      this.props.onTaskSubmit({name: task, time: time, isStart: isStart});
+      this.props.onTaskSubmit({id: id, name: task, time: time, isStart: isStart});
     }
 
     ReactDOM.findDOMNode(this.refs.name).value = '';
+    id++;
   },
   render: function() {
     return (
@@ -334,6 +338,12 @@ var AppBox = React.createClass({
   getInitialState: function() {
     var initialTasks = JSON.parse(strage.getItem('tasks')) !== null ? JSON.parse(strage.getItem('tasks')) : this.props.tasks
 
+    initialTasks.forEach(function(task){
+      task.isStart = false;
+    })
+
+    strage.setItem('tasks', JSON.stringify(initialTasks));
+
     return {tasks: initialTasks};
   },
   componentWillReceiveProps: function(e) {
@@ -346,6 +356,7 @@ var AppBox = React.createClass({
 
     this.setState({tasks: addTask}, function(){
       strage.setItem('tasks', JSON.stringify(addTask));
+      strage.setItem('id', JSON.stringify(task.id));
     });
   },
   handleTaskRemove: function(task) {
@@ -353,7 +364,7 @@ var AppBox = React.createClass({
     var removeTask = task
 
     remainTasks = remainTasks.filter(function(task) {
-      return task.name !== removeTask.name
+      return task.id !== removeTask.id
     })
 
     strage.setItem('tasks', JSON.stringify(remainTasks));
