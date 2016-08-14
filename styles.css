@@ -83,6 +83,17 @@
 .task-item-name {
   width: 40%;
   font-size: 1.6rem; }
+  .task-item-name .icon {
+    display: none;
+    margin-left: 20px; }
+  .task-item-name strong {
+    vertical-align: middle; }
+    .task-item-name strong:hover {
+      cursor: pointer; }
+      .task-item-name strong:hover .icon {
+        display: inline-block;
+        position: relative;
+        top: -.1rem; }
 .task-item-timer {
   width: 30%;
   text-align: center;
@@ -93,9 +104,6 @@
   .task-item-buttons .icon {
     display: none;
     margin-left: 20px;
-    cursor: pointer;
-    vertical-align: middle;
-    line-height: 1;
     font-size: 2rem; }
     .task-item-buttons .icon:hover {
       opacity: .5; }
@@ -105,5 +113,10 @@
       font-size: 2.4rem; }
     .task-item-buttons .icon-trash {
       font-size: 1.6rem; }
+
+.icon {
+  cursor: pointer;
+  vertical-align: middle;
+  line-height: 1; }
 
 /*# sourceMappingURL=styles.css.map */
