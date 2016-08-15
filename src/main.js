@@ -1,7 +1,9 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 var classNames = require('classnames');
-var ipcRenderer = electronRequire('electron').ipcRenderer;
+var electron = electronRequire('electron');
+var ipcRenderer = electron.ipcRenderer;
+var appWindow = electron.remote.getCurrentWindow();
 
 var strage = localStorage;
 
@@ -469,5 +471,8 @@ var AppBox = React.createClass({
 
 ReactDOM.render(
   <AppBox tasks={[]} archives={[]} />,
-  document.getElementById('app-box')
+  document.getElementById('app-box'),
+  function() {
+    appWindow.show()
+  }
 );
