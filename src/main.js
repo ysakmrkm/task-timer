@@ -23,11 +23,56 @@ var Header = React.createClass({
   }
 });
 
-var TaskName = React.createClass({
+var NameContent = React.createClass({
+  componentWillMount(e) {
+    this.setState({content: this.props.content, isClick: this.props.isClick})
+  },
+  handleRename: function(e) {
+    var taskName = this.state !== null ? this.state.content : this.props.content
+
+    if(this.state !== null && this.state.isClick) {
+      this.setState({isClick: false})
+    } else {
+      this.setState({content: taskName, isClick: true})
+    }
+  },
+  handleKeyPress: function(e) {
+    if(e.key === 'Enter') {
+      var name = ReactDOM.findDOMNode(this.refs.name).value.trim();
+
+      if(name !== '') {
+        this.setState({content: name, isClick: false},function() {
+          this.props.onChange(this)
+        })
+      }
+    }
+  },
   render: function() {
+    var taskName = this.state !== null ? this.state.content : this.props.content
+    if(this.state !== null && this.state.isClick) {
+      var renderContent = <input type='text' defaultValue={taskName} onKeyPress={this.handleKeyPress} ref='name' required='required' />
+    } else {
+      var renderContent = <strong>{taskName}<span className="icon icon-pencil" onClick={this.handleRename}></span></strong>
+    }
+
+    return (
+      renderContent
+    );
+  }
+});
+
+var TaskName = React.createClass({
+  handleChange: function(e) {
+    this.setState(e.state, function() {
+      this.props.onChange(this)
+    })
+  },
+  render: function() {
+    var nameContent = <NameContent content={this.props.name.content} isClick={false} onChange={this.handleChange}></NameContent>
+
     return (
       <header className="task-item-name task-item-contents">
-      <strong>{this.props.name}</strong>
+      {nameContent}
       </header>
     );
   }
@@ -127,6 +172,11 @@ var Task = React.createClass({
 
     this.props.onRemove(this.state)
   },
+  handleChange: function(e) {
+    this.setState({name: e.state}, function() {
+      this.props.onNameChange(this)
+    })
+  },
   componentWillMount(e) {
     this.setState(this.props.task)
   },
@@ -172,7 +222,7 @@ var Task = React.createClass({
     return (
       <div className="task-item list-group-item">
       <div className="task-item-inner media-body">
-      <TaskName name={now.name} />
+      <TaskName name={now.name} onChange={this.handleChange} />
       <TaskTime time={now.time} />
       <footer className="task-item-buttons task-item-contents">
       <span className={classNameButtonRemove} onClick={this.handleRemove}></span>
@@ -189,6 +239,21 @@ var Task = React.createClass({
 var TaskList = React.createClass({
   componentWillReceiveProps: function(e) {
     this.setState({tasks: e.tasks})
+  },
+  changeName: function(task){
+    var updateTask = task.state;
+
+    this.setState({tasks: updateTask}, function() {
+      var storedTasks = JSON.parse(strage.getItem('tasks'));
+      var currentTask = this.state;
+
+      Object.keys(storedTasks).forEach(function(key){
+        if(storedTasks[key].id === updateTask.id) {
+          storedTasks[key].name.content = updateTask.name.content;
+          strage.setItem('tasks', JSON.stringify(storedTasks));
+        }
+      });
+    })
   },
   startTask: function(task){
     var updateTasks = this.props.tasks;
@@ -257,6 +322,7 @@ var TaskList = React.createClass({
     var renderTasks = this.props.tasks;
 
     if(renderTasks !== null && renderTasks.length !== 0) {
+      var nameChangeFunc = this.changeName;
       var addTaskFunc = this.addTask;
       var removeTaskFunc = this.removeTask;
       var startTaskFunc = this.startTask;
@@ -267,6 +333,7 @@ var TaskList = React.createClass({
           <Task
             key={task.id}
             task={task}
+            onNameChange={nameChangeFunc}
             onAdd={addTaskFunc}
             onStart={startTaskFunc}
             onPause={pauseTaskFunc}
@@ -282,6 +349,7 @@ var TaskList = React.createClass({
         );
       };
     }
+
     return (
       <div className="window-content">
       <div className="list-group">
@@ -300,7 +368,7 @@ var AddTaskBox = React.createClass({
     var isStart = false;
 
     if(task !== '') {
-      this.props.onTaskSubmit({id: id, name: task, time: time, isStart: isStart});
+      this.props.onTaskSubmit({id: id, name: {content: task, isClick: false}, time: time, isStart: isStart});
     }
 
     ReactDOM.findDOMNode(this.refs.name).value = '';

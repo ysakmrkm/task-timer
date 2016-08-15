@@ -86,18 +86,64 @@
 	  }
 	});
 
+	var NameContent = React.createClass({
+	  displayName: 'NameContent',
+	  componentWillMount: function componentWillMount(e) {
+	    this.setState({ content: this.props.content, isClick: this.props.isClick });
+	  },
+
+	  handleRename: function handleRename(e) {
+	    var taskName = this.state !== null ? this.state.content : this.props.content;
+
+	    if (this.state !== null && this.state.isClick) {
+	      this.setState({ isClick: false });
+	    } else {
+	      this.setState({ content: taskName, isClick: true });
+	    }
+	  },
+	  handleKeyPress: function handleKeyPress(e) {
+	    if (e.key === 'Enter') {
+	      var name = ReactDOM.findDOMNode(this.refs.name).value.trim();
+
+	      if (name !== '') {
+	        this.setState({ content: name, isClick: false }, function () {
+	          this.props.onChange(this);
+	        });
+	      }
+	    }
+	  },
+	  render: function render() {
+	    var taskName = this.state !== null ? this.state.content : this.props.content;
+	    if (this.state !== null && this.state.isClick) {
+	      var renderContent = React.createElement('input', { type: 'text', defaultValue: taskName, onKeyPress: this.handleKeyPress, ref: 'name', required: 'required' });
+	    } else {
+	      var renderContent = React.createElement(
+	        'strong',
+	        null,
+	        taskName,
+	        React.createElement('span', { className: 'icon icon-pencil', onClick: this.handleRename })
+	      );
+	    }
+
+	    return renderContent;
+	  }
+	});
+
 	var TaskName = React.createClass({
 	  displayName: 'TaskName',
 
+	  handleChange: function handleChange(e) {
+	    this.setState(e.state, function () {
+	      this.props.onChange(this);
+	    });
+	  },
 	  render: function render() {
+	    var nameContent = React.createElement(NameContent, { content: this.props.name.content, isClick: false, onChange: this.handleChange });
+
 	    return React.createElement(
 	      'header',
 	      { className: 'task-item-name task-item-contents' },
-	      React.createElement(
-	        'strong',
-	        null,
-	        this.props.name
-	      )
+	      nameContent
 	    );
 	  }
 	});
@@ -206,6 +252,11 @@
 
 	    this.props.onRemove(this.state);
 	  },
+	  handleChange: function handleChange(e) {
+	    this.setState({ name: e.state }, function () {
+	      this.props.onNameChange(this);
+	    });
+	  },
 	  componentWillMount: function componentWillMount(e) {
 	    this.setState(this.props.task);
 	  },
@@ -256,7 +307,7 @@
 	      React.createElement(
 	        'div',
 	        { className: 'task-item-inner media-body' },
-	        React.createElement(TaskName, { name: now.name }),
+	        React.createElement(TaskName, { name: now.name, onChange: this.handleChange }),
 	        React.createElement(TaskTime, { time: now.time }),
 	        React.createElement(
 	          'footer',
@@ -276,6 +327,21 @@
 
 	  componentWillReceiveProps: function componentWillReceiveProps(e) {
 	    this.setState({ tasks: e.tasks });
+	  },
+	  changeName: function changeName(task) {
+	    var updateTask = task.state;
+
+	    this.setState({ tasks: updateTask }, function () {
+	      var storedTasks = JSON.parse(strage.getItem('tasks'));
+	      var currentTask = this.state;
+
+	      Object.keys(storedTasks).forEach(function (key) {
+	        if (storedTasks[key].id === updateTask.id) {
+	          storedTasks[key].name.content = updateTask.name.content;
+	          strage.setItem('tasks', JSON.stringify(storedTasks));
+	        }
+	      });
+	    });
 	  },
 	  startTask: function startTask(task) {
 	    var updateTasks = this.props.tasks;
@@ -344,6 +410,7 @@
 	    var renderTasks = this.props.tasks;
 
 	    if (renderTasks !== null && renderTasks.length !== 0) {
+	      var nameChangeFunc = this.changeName;
 	      var addTaskFunc = this.addTask;
 	      var removeTaskFunc = this.removeTask;
 	      var startTaskFunc = this.startTask;
@@ -353,6 +420,7 @@
 	        return React.createElement(Task, {
 	          key: task.id,
 	          task: task,
+	          onNameChange: nameChangeFunc,
 	          onAdd: addTaskFunc,
 	          onStart: startTaskFunc,
 	          onPause: pauseTaskFunc,
@@ -365,6 +433,7 @@
 	        return React.createElement(Task, null);
 	      };
 	    }
+
 	    return React.createElement(
 	      'div',
 	      { className: 'window-content' },
@@ -387,7 +456,7 @@
 	    var isStart = false;
 
 	    if (task !== '') {
-	      this.props.onTaskSubmit({ id: id, name: task, time: time, isStart: isStart });
+	      this.props.onTaskSubmit({ id: id, name: { content: task, isClick: false }, time: time, isStart: isStart });
 	    }
 
 	    ReactDOM.findDOMNode(this.refs.name).value = '';
